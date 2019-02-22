@@ -56,23 +56,18 @@ namespace _01_Lopukhina_Horoscope
         {
             int age = DateTime.Today.Year - birthdayDate.Year;
             if (birthdayDate > DateTime.Today.AddYears(-age)) age--;
-            if (birthdayDate >= DateTime.Today) age = 0;
             return age;
         }
 
-        private bool CheckAgeCorrect(DateTime date)
+        private void CheckAgeCorrect(DateTime date)
         {
-            int tday = DateTime.Today.Day;
-            int tmonth = DateTime.Today.Month;
-            int tyear = DateTime.Today.Year;
-
-            if (date.Year > tyear || ((date.Day > tday && date.Month >= tmonth) ||
-               (date.Day <= tday && date.Month > tmonth)))
+            if(_age < 0)
             {
                 MessageBox.Show("Hey, you haven't born yet!");
+                _age = 0;
             }
 
-            if (date.Day == tday && date.Month == tmonth)
+            if (date.Day == DateTime.Today.Day && date.Month == DateTime.Today.Month)
             {
                 MessageBox.Show(_hbCongratulations);
             }
@@ -81,8 +76,6 @@ namespace _01_Lopukhina_Horoscope
             {
                 MessageBox.Show("Hmm, you are too old to be alive! \n If you are, than congratulation and I'm pressing F");
             }
-
-            return false;
 
         }
 

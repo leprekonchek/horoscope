@@ -18,7 +18,7 @@ namespace _01_Lopukhina_Horoscope
 
         private string _hbCongratulations =
             "This Birthday wish is just for you, \n And I hope it comes true: \n B e yourself, love and appreciate yourself \n I magine and achieve all you can \n R elax and take it easy \n T ake time and do whatever you want, your \n H umor, never lose it and \n D o not give up, continue going \n A nd remember, you are loved by others \n Y esterday is gone, tomorrow is not here, live today and enjoy the year.";
-       
+
         #region Commands
         private RelayCommand<object> _calculateZodiacSign;
         private RelayCommand<object> _calculateChineseSign;
@@ -29,7 +29,7 @@ namespace _01_Lopukhina_Horoscope
 
         public string Age
         {
-            get =>  $"Your age is {_age}";
+            get => $"Your age is {_age}";
         }
 
         public string China
@@ -52,25 +52,29 @@ namespace _01_Lopukhina_Horoscope
             }
         }
 
-        private int CalculateAge(DateTime birthdayDate, DateTime today)
+        private int CalculateAge(DateTime birthdayDate)
         {
-            int age = today.Year - birthdayDate.Year;
-            if (birthdayDate > today.AddYears(-age)) age--;
-            if (birthdayDate >= today) age = 0;
+            int age = DateTime.Today.Year - birthdayDate.Year;
+            if (birthdayDate > DateTime.Today.AddYears(-age)) age--;
+            if (birthdayDate >= DateTime.Today) age = 0;
             return age;
         }
 
         private bool CheckAgeCorrect(DateTime date)
         {
-            if ((date.Year >= DateTime.Today.Year && date.Month >= DateTime.Today.Month && date.Day > DateTime.Today.Day) || 
-                (date.Day == DateTime.Today.Day && (date.Year > DateTime.Today.Year || date.Month > DateTime.Today.Month)))
+            int tday = DateTime.Today.Day;
+            int tmonth = DateTime.Today.Month;
+            int tyear = DateTime.Today.Year;
+
+            if (date.Year > tyear || ((date.Day > tday && date.Month >= tmonth) ||
+               (date.Day <= tday && date.Month > tmonth)))
             {
                 MessageBox.Show("Hey, you haven't born yet!");
             }
 
-            if (date.Day == DateTime.Today.Day && date.Month == DateTime.Today.Month)
+            if (date.Day == tday && date.Month == tmonth)
             {
-                return true;
+                MessageBox.Show(_hbCongratulations);
             }
 
             if (_age > 135)
@@ -84,17 +88,14 @@ namespace _01_Lopukhina_Horoscope
 
         public DateTime DateChanger
         {
-            get => DateTime.Today;
+            get => _enteredDate;
             set
             {
                 _enteredDate = value;
-                _age = CalculateAge(_enteredDate, DateTime.Today);
+                _age = CalculateAge(_enteredDate);
                 West = "";
                 China = "";
-                if (CheckAgeCorrect(_enteredDate))
-                {
-                    MessageBox.Show(_hbCongratulations);
-                }
+                CheckAgeCorrect(_enteredDate);
                 OnPropertyChanged(nameof(Age));
             }
 
@@ -103,29 +104,19 @@ namespace _01_Lopukhina_Horoscope
 
         #region Commands
 
-        public RelayCommand<object> WestHoroscopeCommand
-        {
-            get
-            {
-                return _calculateZodiacSign ?? (_calculateZodiacSign = new RelayCommand<object>(
-                           WestHoroscopeImplementation));
-            }
-        }
+        public RelayCommand<object> WestHoroscopeCommand =>
+            _calculateZodiacSign ?? (_calculateZodiacSign = new RelayCommand<object>(
+                WestHoroscopeImplementation));
 
-        public RelayCommand<object> ChinaHoroscopeCommand
-        {
-            get
-            {
-                return _calculateChineseSign ?? (_calculateChineseSign = new RelayCommand<object>(
-                           ChinaHoroscopeImplementation));
-            }
-        }
+        public RelayCommand<object> ChinaHoroscopeCommand =>
+            _calculateChineseSign ?? (_calculateChineseSign = new RelayCommand<object>(
+                ChinaHoroscopeImplementation));
 
         #endregion
 
         public string ChinaHoroscope()
         {
-            int index = (_enteredDate.Year - 1900) % 12;
+            int index = Math.Abs(_enteredDate.Year - 1900) % 12;
             return _chinaSigns[index];
         }
 
@@ -191,21 +182,12 @@ namespace _01_Lopukhina_Horoscope
 
         private async void WestHoroscopeImplementation(object obj)
         {
-            await Task.Run(() =>
-            {
-                West = WestHoroscope();
-                _age = CalculateAge(_enteredDate, DateTime.Today);
-            }
-            );
+            await Task.Run(() => West = WestHoroscope());
         }
 
         private async void ChinaHoroscopeImplementation(object obj)
         {
-            await Task.Run(() =>
-            {
-                China = ChinaHoroscope();
-                _age = CalculateAge(_enteredDate, DateTime.Today);
-            });
+            await Task.Run(() => China = ChinaHoroscope());
         }
 
         #region INotifyPropertyChanged
